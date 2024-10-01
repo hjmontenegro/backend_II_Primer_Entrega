@@ -1,28 +1,42 @@
 import express from 'express'
 import mongoose from "mongoose";
-import handlebars from 'express-handlebars'
-import __dirname from './utils/utils.js'
+import handlebars from 'express-handlebars';
+import dotenv from "dotenv";
+import cookieParser from 'cookie-parser';
+import passport from 'passport';
 
+import __dirname from './utils/utils.js';
 import _connect from './public/js/_connect.js';
 
-import homeRouter from './routes/home.routers.js'
-import productsRouter from './routes/products.routers.js'
-import cartsRouter from './routes/carts.routers.js'
+import usersRouter from './routes/users.router.js';
+import homeRouter from './routes/home.routers.js';
+import productsRouter from './routes/products.routers.js';
+import cartsRouter from './routes/carts.routers.js';
+import sessionsRouter from './routes/sessions.router.js';
+
+import initializePassport from './public/js/pass.config.js';
+
 
 import { Server } from 'socket.io';
 import { helpers } from "./utils/utils.js";
-import { config } from "dotenv";
 
-import Swal from 'sweetalert2';
-
-const app = express()
-const PORT = 8080
-
-app.use(express.json())
-app.use(express.urlencoded({ extended : true }))
+//import Swal from 'sweetalert2';
 
 // configurar dotenv
-config({path: '.env'});
+//config({path: '.env'});
+dotenv.config();
+
+const app = express();
+const PORT = 8080;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended : true }));
+app.use(express.static(__dirname + '/public'));
+
+app.use(cookieParser());
+
+initializePassport();
+app.use(passport.initialize());
 
 // mongo connection
 _connect();
@@ -53,6 +67,8 @@ app.use('/bootstrap/js', express.static(__dirname + '/node_modules/bootstrap/dis
 //Ahora toda la logica de las vistas quedan en router
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
+app.use('/api/sessions', sessionsRouter);
+app.use('/api/users', usersRouter)
 app.use('/', homeRouter)
 
 /*app.listen(PORT, () => {
